@@ -6,16 +6,16 @@ import math
 
 
 class Board(tk.Canvas):
-    def __init__(self, size=64):
+    def __init__(self, root, size=64, on_update=None):
         """size is the size of a square, in pixels"""
-        super().__init__(borderwidth=0, highlightthickness=0, width=8 * size, height=8 * size)
+        super().__init__(root, borderwidth=0, highlightthickness=0, width=8 * size, height=8 * size)
         self.size = size
+        self.on_update = on_update
         self.color_white = "white"
         self.color_tile = "#70adc2"
         self.color_selected = "#68ad7c"
         self.color_action = "#68ad7c"
         self.state = None
-        self.pack(side="top", fill="both", expand=True, padx=2, pady=2)
         # this binding will cause a redraw if the user interactively
         # changes the window size
         self.bind("<Configure>", self.redraw)
@@ -75,6 +75,10 @@ class Board(tk.Canvas):
                 image = self.piece_img[(c, t)]
                 self.create_image(j * self.size, i * self.size, image=image, anchor="nw")
 
+        # Trigger callback
+        if self.on_update:
+            self.on_update()
+
     def on_click(self, event):
         i = math.floor(event.y / self.size)
         j = math.floor(event.x / self.size)
@@ -92,17 +96,3 @@ class Board(tk.Canvas):
         else:
             self.selected = -1
         self.redraw()
-
-
-if __name__ == "__main__":
-    root = tk.Tk()
-    frame = tk.Frame(root)
-    board = Board()
-    state = State()
-    board.state = state
-    # Show frame
-    frame.pack(side="top", fill="both", expand="true", padx=4, pady=4)
-    root.lift()
-    root.attributes("-topmost", True)
-    root.after_idle(root.attributes, "-topmost", False)
-    root.mainloop()
